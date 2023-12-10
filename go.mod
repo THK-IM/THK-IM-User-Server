@@ -7,7 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.1
 	github.com/o1egl/govatar v0.4.1
 	github.com/sirupsen/logrus v1.9.3
-	github.com/thk-im/thk-im-base-server v0.0.0-20231210103827-5936eb5def1d
+	github.com/thk-im/thk-im-base-server v0.0.0-20231210115213-f9fa53007dd5
 	gorm.io/gorm v1.25.5
 )
 
@@ -28,6 +28,7 @@ require (
 	github.com/go-resty/resty/v2 v2.10.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/golang-jwt/jwt/v5 v5.2.0 // indirect
 	github.com/golang/protobuf v1.5.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/h2non/filetype v1.1.3 // indirect
