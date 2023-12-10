@@ -6,7 +6,7 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 	httpEngine := appCtx.HttpEngine()
 
 	userGroup := httpEngine.Group("/user")
-	userGroup.GET("/register", userRegister(appCtx))
+	userGroup.POST("/register", userRegister(appCtx))
 	userGroup.POST("/login", userLogin(appCtx))
 
 	userGroup.GET("/:id", queryUser(appCtx))

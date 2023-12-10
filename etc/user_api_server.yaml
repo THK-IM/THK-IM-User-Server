@@ -1,6 +1,7 @@
 Name: user_api_server
+Cipher: thk_im
 Host: 0.0.0.0
-Port: 42000
+Port: 10000
 Mode: debug
 # exposed外网暴露模式，校验用户token
 # backend后端模式，校验ip
@@ -27,8 +28,16 @@ MysqlSource:
   MaxOpenConn: 20
   ConnMaxLifeTime: 3600
   ConnMaxIdleTime: 3600
+ObjectStorage:
+  Endpoint: "http://minio.thkim.com"
+  Bucket: "thk"
+  AK: "7pwGcuomjng4cRKWYPNz"
+  SK: "IzN7VrEKOGIPIEkhvQU6cJepu6bdrNC95BRYslwJ"
+  Region: us-east-1
 Models:
   - Name: "user"
+    Shards: 5
+  - Name: "account"
     Shards: 5
 Metric:
   Endpoint: "/metrics"
