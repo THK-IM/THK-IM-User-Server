@@ -1,7 +1,7 @@
 FROM golang:1.20.0-alpine as Builder
 ENV GO111MOUDLEON=on
 ENV GOPROXY=https://goproxy.cn
-ENV PROJECT_NAME=user_api_server
+ENV PROJECT_NAME=user_server
 RUN mkdir -p /opt/${PROJECT_NAME}
 WORKDIR /opt/${PROJECT_NAME}
 COPY go.mod ./
@@ -10,7 +10,7 @@ ADD .. .
 RUN go build -o ${PROJECT_NAME} main.go
 
 FROM golang:1.20.0-alpine as Runner
-ENV PROJECT_NAME=user_api_server
+ENV PROJECT_NAME=user_server
 RUN mkdir -p /opt/${PROJECT_NAME}
 WORKDIR /opt/${PROJECT_NAME}
 COPY --from=builder /opt/${PROJECT_NAME}/${PROJECT_NAME} /opt/${PROJECT_NAME}/${PROJECT_NAME}

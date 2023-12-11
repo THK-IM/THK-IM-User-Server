@@ -3,10 +3,12 @@ package logic
 import (
 	"fmt"
 	"github.com/o1egl/govatar"
+	"github.com/skip2/go-qrcode"
 	"github.com/thk-im/thk-im-base-server/utils"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"github.com/thk-im/thk-im-user-server/pkg/model"
+	"image/color"
 	"time"
 )
 
@@ -42,10 +44,10 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 		if *sex == sexFemale {
 			male = govatar.FEMALE
 		}
-		err := govatar.GenerateFile(male, filePath)
+		err := govatar.GenerateFileForUsername(male, *nickname, filePath)
 		if err == nil {
-			key := fmt.Sprintf("avatar/%d/%s", id, fileName)
-			avatarUrl, err = l.appCtx.ObjectStorage().UploadObject(key, filePath)
+			avatarKey := fmt.Sprintf("avatar/%d/%s", id, fileName)
+			avatarUrl, err = l.appCtx.ObjectStorage().UploadObject(avatarKey, filePath)
 			if err != nil {
 				l.appCtx.Logger().Error("upload object file error: ", err)
 			}
@@ -53,8 +55,23 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 			l.appCtx.Logger().Error("go avatar generate file error: ", err)
 		}
 	}
+
+	qrFileName := fmt.Sprintf("%s-%d-qrcode.png", *nickname, time.Now().UnixMilli()/1000)
+	qrFilePath := fmt.Sprintf("tmp/%s", qrFileName)
+	url := fmt.Sprintf("https://api.thkim.com/user/%d", id)
+	errQrcode := qrcode.WriteColorFile(url, qrcode.Medium, 256, color.Black, color.White, qrFilePath)
+	if errQrcode != nil {
+		l.appCtx.Logger().Error(errQrcode)
+	}
+	qrCodeKey := fmt.Sprintf("avatar/%d/%s", id, qrFileName)
+	qrAvatarUrl, errUpload := l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
+	if errUpload != nil {
+		l.appCtx.Logger().Error("upload object file error: ", errUpload)
+	}
+
 	user, err := l.appCtx.UserModel().AddUser(id, req.Account, req.Password, nil, req.Nickname,
-		avatarUrl, nil, sex, nil, model.ChannelDefault)
+		avatarUrl, qrAvatarUrl, sex, nil, model.ChannelDefault,
+	)
 	if err != nil {
 		return nil, err
 	}

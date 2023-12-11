@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	configPath := "etc/user_api_server.yaml"
+	configPath := "etc/user_server.yaml"
 	config := conf.LoadConfig(configPath)
 
 	appCtx := &app.Context{}

@@ -1,4 +1,4 @@
-Name: user_api_server
+Name: user_server
 Cipher: thk_im
 Host: 0.0.0.0
 Port: 10000

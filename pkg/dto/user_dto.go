@@ -6,6 +6,7 @@ type RegisterReq struct {
 	Nickname *string `json:"nickname"`
 	Sex      *int8   `json:"sex"`
 	Avatar   *string `json:"avatar"`
+	Birthday *int64  `json:"birthday"`
 }
 
 type RegisterRes struct {
@@ -26,9 +27,9 @@ type LoginRes struct {
 type User struct {
 	Id        int64   `json:"id"`
 	DisplayId string  `json:"display_id"`
-	Avatar    *string `json:"avatar"`
-	Nickname  *string `json:"nickname"`
-	Qrcode    *string `json:"qrcode"`
-	Sex       *int8   `json:"sex"`
-	Birthday  *int64  `json:"birthday"`
+	Avatar    *string `json:"avatar,omitempty"`
+	Nickname  *string `json:"nickname,omitempty"`
+	Qrcode    *string `json:"qrcode,omitempty"`
+	Sex       *int8   `json:"sex,omitempty"`
+	Birthday  *int64  `json:"birthday,omitempty"`
 }
