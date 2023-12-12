@@ -5,6 +5,7 @@ import (
 	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
+	"hash/crc32"
 	"strconv"
 	"time"
 )
@@ -35,9 +36,16 @@ type (
 		UpdateTime int64   `gorm:"update_time"`
 	}
 
+	UserDisplayId struct {
+		DisplayId string `gorm:"display_id"`
+		Id        int64  `gorm:"id"`
+	}
+
 	UserModel interface {
 		AddUser(id int64, account, password, phone, nickname, avatar, qrcode *string, sex *int8, birthday *int64, channel string) (*User, error)
 		UpdateUser(id int64, phone, nickname, avatar, qrcode *string, sex *int8, birthday *int64) error
+		FindOne(id int64) (*User, error)
+		FindUIdByDisplayId(displayId string) (*int64, error)
 	}
 
 	defaultUserModel struct {
@@ -57,7 +65,10 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 			tx.Commit()
 		}
 	}()
-	displayId := strconv.FormatInt(id, 8)
+
+	displayId := strconv.FormatInt(id, 16)
+	displayIdTableName := d.genUserDisplayIdTableName(displayId)
+
 	now := time.Now().UnixMilli()
 	user = &User{
 		Id:         id,
@@ -70,6 +81,14 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		Qrcode:     qrcode,
 		CreateTime: now,
 		UpdateTime: now,
+	}
+	userDisplayId := &UserDisplayId{
+		DisplayId: displayId,
+		Id:        id,
+	}
+	err = tx.Table(displayIdTableName).Create(userDisplayId).Error
+	if err != nil {
+		return nil, err
 	}
 	err = tx.Table(d.genUserTableName(id)).Create(user).Error
 	if err != nil {
@@ -114,6 +133,31 @@ func (d defaultUserModel) UpdateUser(id int64, phone, nickname, avatar, qrcode *
 	}
 	updateMap["update_time"] = time.Now().UnixMilli()
 	return d.db.Table(d.genUserTableName(id)).Where("id = ?", id).Updates(updateMap).Error
+}
+
+func (d defaultUserModel) FindOne(id int64) (*User, error) {
+	tableName := d.genUserTableName(id)
+	sql := fmt.Sprintf("select * from %s where id = ?", tableName)
+	user := &User{}
+	err := d.db.Table(tableName).Raw(sql).Scan(user).Error
+	return user, err
+}
+
+func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
+	tableName := d.genUserDisplayIdTableName(displayId)
+	sql := fmt.Sprintf("select * from %s where display_id = ?", tableName)
+	user := &UserDisplayId{}
+	err := d.db.Table(tableName).Raw(sql).Scan(user).Error
+	if err != nil {
+		return nil, err
+	} else {
+		return &user.Id, nil
+	}
+}
+
+func (d defaultUserModel) genUserDisplayIdTableName(displayId string) string {
+	sum := int64(crc32.ChecksumIEEE([]byte(displayId)))
+	return fmt.Sprintf("user_display_id_%d", sum%d.shards)
 }
 
 func (d defaultUserModel) genUserTableName(id int64) string {

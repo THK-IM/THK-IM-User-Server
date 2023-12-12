@@ -1,12 +1,17 @@
 package logic
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/o1egl/govatar"
+	"github.com/redis/go-redis/v9"
 	"github.com/skip2/go-qrcode"
 	"github.com/thk-im/thk-im-base-server/utils"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
+	"github.com/thk-im/thk-im-user-server/pkg/errorx"
 	"github.com/thk-im/thk-im-user-server/pkg/model"
 	"image/color"
 	"time"
@@ -15,6 +20,8 @@ import (
 var (
 	sexMale   int8 = 0
 	sexFemale int8 = 1
+
+	userInfoKeyFormatter = "%s:u_info:%d"
 )
 
 type UserLoginLogic struct {
@@ -81,17 +88,69 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 		return nil, errToken
 	}
 	resp := &dto.RegisterRes{
-		User:  l.userModel2Dto(user),
+		User:  userModel2UserDto(user),
 		Token: token,
 	}
 	return resp, nil
 }
 
-func (l *UserLoginLogic) Login(req dto.LoginReq) (*dto.LoginRes, error) {
+func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq) (*dto.LoginRes, error) {
 	return nil, nil
 }
 
-func (l *UserLoginLogic) userModel2Dto(user *model.User) *dto.User {
+func (l *UserLoginLogic) TokenLogin(req dto.TokenLoginReq) (*dto.LoginRes, error) {
+	uId, err := utils.CheckUserToken(*req.Token, l.appCtx.Config().Cipher)
+	if err != nil {
+		l.appCtx.Logger().Error(err, req)
+		return nil, errorx.UserTokenError
+	}
+	userInfo, errUser := getUserInfo(*uId, l.appCtx)
+	if errUser != nil {
+		l.appCtx.Logger().Error(err, req)
+		return nil, errUser
+	}
+	loginRes := &dto.LoginRes{
+		User: userInfo,
+	}
+	return loginRes, nil
+}
+
+func getUserInfo(uId int64, appCtx *app.Context) (*dto.User, error) {
+	userInfoKey := fmt.Sprintf(userInfoKeyFormatter, appCtx.Config().Name, uId)
+	userInfoJson, errCache := appCtx.RedisCache().Get(context.Background(), userInfoKey).Result()
+	if errCache != nil && !errors.Is(errCache, redis.Nil) {
+		appCtx.Logger().Error(errCache)
+		return nil, errCache
+	}
+	if errors.Is(errCache, redis.Nil) {
+		user, errDb := appCtx.UserModel().FindOne(uId)
+		if errDb != nil {
+			appCtx.Logger().Error(errDb)
+			return nil, errDb
+		}
+		userInfo := userModel2UserDto(user)
+		errCache = setUserInfoCache(userInfo, appCtx)
+		if errCache != nil {
+			appCtx.Logger().Error(errCache)
+		}
+		return userInfo, nil
+	}
+	userInfo := &dto.User{}
+	errJson := json.Unmarshal([]byte(userInfoJson), userInfo)
+	return userInfo, errJson
+}
+
+func setUserInfoCache(user *dto.User, appCtx *app.Context) error {
+	userInfoKey := fmt.Sprintf(userInfoKeyFormatter, appCtx.Config().Name, user.Id)
+	userInfoJson, errJson := json.Marshal(user)
+	if errJson != nil {
+		appCtx.Logger().Error(errJson)
+		return errJson
+	}
+	return appCtx.RedisCache().Set(context.Background(), userInfoKey, string(userInfoJson), time.Hour*7*24).Err()
+}
+
+func userModel2UserDto(user *model.User) *dto.User {
 	return &dto.User{
 		Id:        user.Id,
 		DisplayId: user.DisplayId,
