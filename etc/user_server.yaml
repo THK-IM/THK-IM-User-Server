@@ -29,13 +29,15 @@ MysqlSource:
   ConnMaxLifeTime: 3600
   ConnMaxIdleTime: 3600
 ObjectStorage:
-  Endpoint: "http://minio.thkim.com"
-  Bucket: "thk"
-  AK: "7pwGcuomjng4cRKWYPNz"
-  SK: "IzN7VrEKOGIPIEkhvQU6cJepu6bdrNC95BRYslwJ"
+  Endpoint: ${OS_Endpoint}
+  Bucket: ${OS_BUCKET}
+  AK: ${OS_AK}
+  SK: ${OS_SK}
   Region: us-east-1
 Models:
   - Name: "user"
+    Shards: 5
+  - Name: "user_display_id"
     Shards: 5
   - Name: "account"
     Shards: 5
@@ -46,5 +48,3 @@ Metric:
 Sdks:
   - Name: msg-api
     Endpoint: "http://127.0.0.1:18000"
-#  - Name: user-api
-#    Endpoint: "http://127.0.0.1:18000"

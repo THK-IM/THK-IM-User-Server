@@ -16,10 +16,10 @@ const ChannelApple = "apple"
 
 type (
 	Account struct {
-		UserId     int64   `json:"user_id"`
-		Account    string  `json:"account"`
-		Password   *string `json:"password"`
-		Channel    string  `json:"channel"`
+		UserId     int64   `gorm:"user_id"`
+		Account    string  `gorm:"account"`
+		Password   *string `gorm:"password"`
+		Channel    string  `gorm:"channel"`
 		CreateTime int64   `gorm:"create_time"`
 		UpdateTime int64   `gorm:"update_time"`
 	}

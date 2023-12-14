@@ -63,17 +63,20 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 		}
 	}
 
+	var qrAvatarUrl *string = nil
 	qrFileName := fmt.Sprintf("%s-%d-qrcode.png", *nickname, time.Now().UnixMilli()/1000)
 	qrFilePath := fmt.Sprintf("tmp/%s", qrFileName)
 	url := fmt.Sprintf("https://api.thkim.com/user/%d", id)
 	errQrcode := qrcode.WriteColorFile(url, qrcode.Medium, 256, color.Black, color.White, qrFilePath)
 	if errQrcode != nil {
 		l.appCtx.Logger().Error(errQrcode)
-	}
-	qrCodeKey := fmt.Sprintf("avatar/%d/%s", id, qrFileName)
-	qrAvatarUrl, errUpload := l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
-	if errUpload != nil {
-		l.appCtx.Logger().Error("upload object file error: ", errUpload)
+	} else {
+		qrCodeKey := fmt.Sprintf("avatar/%d/%s", id, qrFileName)
+		qrAvatarUrl, errQrcode = l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
+		if errQrcode != nil {
+			l.appCtx.Logger().Error("upload object file error: ", errQrcode)
+		}
+
 	}
 
 	user, err := l.appCtx.UserModel().AddUser(id, req.Account, req.Password, nil, req.Nickname,
