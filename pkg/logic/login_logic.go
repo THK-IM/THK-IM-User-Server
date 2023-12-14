@@ -90,8 +90,9 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 	if err != nil {
 		return nil, errToken
 	}
+	dtoUser := userModel2UserDto(user)
 	resp := &dto.RegisterRes{
-		User:  userModel2UserDto(user),
+		User:  dtoUser,
 		Token: token,
 	}
 	return resp, nil

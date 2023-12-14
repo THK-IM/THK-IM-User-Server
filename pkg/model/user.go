@@ -139,7 +139,7 @@ func (d defaultUserModel) FindOne(id int64) (*User, error) {
 	tableName := d.genUserTableName(id)
 	sql := fmt.Sprintf("select * from %s where id = ?", tableName)
 	user := &User{}
-	err := d.db.Table(tableName).Raw(sql).Scan(user).Error
+	err := d.db.Table(tableName).Raw(sql, id).Scan(user).Error
 	return user, err
 }
 
@@ -147,7 +147,7 @@ func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 	tableName := d.genUserDisplayIdTableName(displayId)
 	sql := fmt.Sprintf("select * from %s where display_id = ?", tableName)
 	user := &UserDisplayId{}
-	err := d.db.Table(tableName).Raw(sql).Scan(user).Error
+	err := d.db.Table(tableName).Raw(sql, displayId).Scan(user).Error
 	if err != nil {
 		return nil, err
 	} else {
