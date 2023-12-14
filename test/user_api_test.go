@@ -28,7 +28,7 @@ func TestUserRegister(t *testing.T) {
 	passwords := make([]*string, 0)
 	for i := 0; i < count; i++ {
 		var account, password *string
-		if i%3 == 0 {
+		if i%3 != 0 {
 			account = nil
 			password = nil
 		} else {

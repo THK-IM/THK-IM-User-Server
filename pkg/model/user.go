@@ -103,7 +103,7 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 			CreateTime: now,
 			UpdateTime: now,
 		}
-		err = tx.Table(d.genUserTableName(id)).Create(userAccount).Error
+		err = tx.Table(d.genAccountTableName(id)).Create(userAccount).Error
 	}
 	return user, err
 }
@@ -158,6 +158,10 @@ func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 func (d defaultUserModel) genUserDisplayIdTableName(displayId string) string {
 	sum := int64(crc32.ChecksumIEEE([]byte(displayId)))
 	return fmt.Sprintf("user_display_id_%d", sum%d.shards)
+}
+
+func (d defaultUserModel) genAccountTableName(id int64) string {
+	return fmt.Sprintf("account_%d", id%d.shards)
 }
 
 func (d defaultUserModel) genUserTableName(id int64) string {
