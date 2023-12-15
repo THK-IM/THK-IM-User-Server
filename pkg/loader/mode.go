@@ -2,9 +2,9 @@ package loader
 
 import (
 	"fmt"
-	"github.com/bwmarrin/snowflake"
 	"github.com/sirupsen/logrus"
 	"github.com/thk-im/thk-im-base-server/conf"
+	"github.com/thk-im/thk-im-base-server/snowflake"
 	"github.com/thk-im/thk-im-user-server/pkg/model"
 	"gorm.io/gorm"
 	"os"
