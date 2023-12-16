@@ -13,7 +13,7 @@ const (
 	PlatformKey = "Platform"
 )
 
-func UserTokenAuth(userApi UserApi, logger logrus.Entry) gin.HandlerFunc {
+func UserTokenAuth(userApi UserApi, logger *logrus.Entry) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		token := context.GetHeader(TokenKey)
 		platform := context.GetHeader(PlatformKey)
