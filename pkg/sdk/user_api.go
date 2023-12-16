@@ -2,11 +2,11 @@ package sdk
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/thk-im/thk-im-base-server/conf"
+	"github.com/thk-im/thk-im-base-server/errorx"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"net/http"
 	"time"
@@ -32,7 +32,7 @@ type (
 func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq) (*dto.LoginRes, error) {
 	dataBytes, errJson := json.Marshal(req)
 	if errJson != nil {
-		d.logger.Error(errJson)
+		d.logger.Errorf("LoginByToken %v %v", req, errJson)
 		return nil, errJson
 	}
 	url := fmt.Sprintf("%s%s", d.endpoint, tokenLoginPath)
@@ -41,21 +41,27 @@ func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq) (*dto.LoginRes, erro
 		SetBody(dataBytes).
 		Post(url)
 	if errRequest != nil {
-		d.logger.Error(errRequest, string(dataBytes))
+		d.logger.Errorf("LoginByToken %v %v", req, errRequest)
 		return nil, errRequest
 	}
 	if res.StatusCode() != http.StatusOK {
-		e := errors.New(string(res.Body()))
-		d.logger.Error(e, string(dataBytes))
-		return nil, e
-	} else {
-		loginRes := &dto.LoginRes{}
-		errJson = json.Unmarshal(res.Body(), loginRes)
-		if errJson != nil {
-			d.logger.Error(errJson, string(res.Body()))
-			return nil, errJson
+		errRes := &errorx.ErrorX{}
+		e := json.Unmarshal(res.Body(), errRes)
+		if e != nil {
+			d.logger.Errorf("LoginByToken: %v %v", req, e)
+			return nil, e
 		} else {
-			return loginRes, nil
+			return nil, errRes
+		}
+	} else {
+		resp := &dto.LoginRes{}
+		e := json.Unmarshal(res.Body(), resp)
+		if e != nil {
+			d.logger.Errorf("LoginByToken: %v %v", req, e)
+			return nil, e
+		} else {
+			d.logger.Infof("LoginByToken: %v %v", req, resp)
+			return resp, nil
 		}
 	}
 }

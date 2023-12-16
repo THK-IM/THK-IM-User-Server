@@ -103,7 +103,7 @@ func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq) (*dto.LoginRes, e
 }
 
 func (l *UserLoginLogic) TokenLogin(req dto.TokenLoginReq) (*dto.LoginRes, error) {
-	uId, err := utils.CheckUserToken(*req.Token, l.appCtx.Config().Cipher)
+	uId, err := utils.CheckUserToken(req.Token, l.appCtx.Config().Cipher)
 	if err != nil {
 		l.appCtx.Logger().Error(err, req)
 		return nil, errorx.UserTokenError
