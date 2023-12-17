@@ -82,11 +82,11 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		CreateTime: now,
 		UpdateTime: now,
 	}
-	userDisplayId := &UserDisplayId{
+	userDisplay := &UserDisplayId{
 		DisplayId: displayId,
 		Id:        id,
 	}
-	err = tx.Table(displayIdTableName).Create(userDisplayId).Error
+	err = tx.Table(displayIdTableName).Create(userDisplay).Error
 	if err != nil {
 		return nil, err
 	}
