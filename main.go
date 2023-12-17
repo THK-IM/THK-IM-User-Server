@@ -7,8 +7,7 @@ import (
 	"os"
 )
 
-func main() {
-
+func init() {
 	tmpFolder := "tmp"
 	if _, err := os.Stat(tmpFolder); os.IsNotExist(err) {
 		err = os.MkdirAll(tmpFolder, os.ModePerm)
@@ -16,6 +15,10 @@ func main() {
 			panic(err)
 		}
 	}
+
+}
+
+func main() {
 
 	configPath := "etc/user_server.yaml"
 	config := conf.LoadConfig(configPath)
