@@ -37,7 +37,7 @@ ObjectStorage:
 Models:
   - Name: "user"
     Shards: 5
-  - Name: "user_display_id"
+  - Name: "user_display"
     Shards: 5
   - Name: "account"
     Shards: 5

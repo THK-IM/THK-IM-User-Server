@@ -36,7 +36,7 @@ type (
 		UpdateTime int64   `gorm:"update_time"`
 	}
 
-	UserDisplayId struct {
+	UserDisplay struct {
 		DisplayId string `gorm:"display_id"`
 		Id        int64  `gorm:"id"`
 	}
@@ -82,7 +82,7 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		CreateTime: now,
 		UpdateTime: now,
 	}
-	userDisplay := &UserDisplayId{
+	userDisplay := &UserDisplay{
 		DisplayId: displayId,
 		Id:        id,
 	}
@@ -146,7 +146,7 @@ func (d defaultUserModel) FindOne(id int64) (*User, error) {
 func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 	tableName := d.genUserDisplayIdTableName(displayId)
 	sql := fmt.Sprintf("select * from %s where display_id = ?", tableName)
-	user := &UserDisplayId{}
+	user := &UserDisplay{}
 	err := d.db.Table(tableName).Raw(sql, displayId).Scan(user).Error
 	if err != nil {
 		return nil, err
@@ -157,7 +157,7 @@ func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 
 func (d defaultUserModel) genUserDisplayIdTableName(displayId string) string {
 	sum := int64(crc32.ChecksumIEEE([]byte(displayId)))
-	return fmt.Sprintf("user_display_id_%d", sum%d.shards)
+	return fmt.Sprintf("user_display_%d", sum%d.shards)
 }
 
 func (d defaultUserModel) genAccountTableName(id int64) string {

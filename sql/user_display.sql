@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `user_display_id_%s`
+CREATE TABLE IF NOT EXISTS `user_display_%s`
 (
     `display_id` varchar(20) NOT NULL COMMENT '显示id',
     `id`         BIGINT      NOT NULL COMMENT 'id',
