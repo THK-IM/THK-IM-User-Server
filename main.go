@@ -4,9 +4,19 @@ import (
 	"github.com/thk-im/thk-im-base-server/conf"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/handler"
+	"os"
 )
 
 func main() {
+
+	tmpFolder := "tmp"
+	if _, err := os.Stat(tmpFolder); os.IsNotExist(err) {
+		err = os.MkdirAll(tmpFolder, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	configPath := "etc/user_server.yaml"
 	config := conf.LoadConfig(configPath)
 

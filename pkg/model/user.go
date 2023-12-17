@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-const ChannelDefault = "app"
+const ChannelDefault = "thk_im"
 const ChannelWechat = "wechat"
 const ChannelApple = "apple"
 
@@ -62,7 +62,7 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		if err != nil {
 			tx.Rollback()
 		} else {
-			tx.Commit()
+			err = tx.Commit().Error
 		}
 	}()
 
