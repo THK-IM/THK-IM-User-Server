@@ -66,7 +66,7 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		}
 	}()
 
-	displayId := strconv.FormatInt(id, 16)
+	displayId := strconv.FormatInt(id, 36)
 	displayIdTableName := d.genUserDisplayIdTableName(displayId)
 
 	now := time.Now().UnixMilli()
