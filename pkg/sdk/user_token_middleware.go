@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
+	baseMiddleware "github.com/thk-im/thk-im-base-server/middleware"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 )
 
@@ -24,7 +25,8 @@ func UserTokenAuth(userApi UserApi, logger *logrus.Entry) gin.HandlerFunc {
 			return
 		}
 		req := dto.TokenLoginReq{Token: token, Platform: platform}
-		userInfo, err := userApi.LoginByToken(req)
+		claims := context.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
+		userInfo, err := userApi.LoginByToken(req, claims)
 		if err != nil {
 			logger.Errorf("UserTokenAuth: %v %v", req, err)
 			baseDto.ResponseForbidden(context)

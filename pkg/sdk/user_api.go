@@ -6,6 +6,7 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/thk-im/thk-im-base-server/conf"
+	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	"github.com/thk-im/thk-im-base-server/errorx"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"net/http"
@@ -19,7 +20,7 @@ const (
 
 type (
 	UserApi interface {
-		LoginByToken(req dto.TokenLoginReq) (*dto.LoginRes, error)
+		LoginByToken(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error)
 	}
 
 	defaultUserApi struct {
@@ -29,14 +30,19 @@ type (
 	}
 )
 
-func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq) (*dto.LoginRes, error) {
+func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
 	dataBytes, errJson := json.Marshal(req)
 	if errJson != nil {
 		d.logger.Errorf("LoginByToken %v %v", req, errJson)
 		return nil, errJson
 	}
 	url := fmt.Sprintf("%s%s", d.endpoint, tokenLoginPath)
-	res, errRequest := d.client.R().
+	request := d.client.R()
+	for k, v := range claims {
+		vs := v.(string)
+		request.SetHeader(k, vs)
+	}
+	res, errRequest := request.
 		SetHeader("Content-Type", contentType).
 		SetBody(dataBytes).
 		Post(url)

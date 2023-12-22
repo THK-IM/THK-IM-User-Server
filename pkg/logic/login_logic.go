@@ -8,6 +8,7 @@ import (
 	"github.com/o1egl/govatar"
 	"github.com/redis/go-redis/v9"
 	"github.com/skip2/go-qrcode"
+	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	"github.com/thk-im/thk-im-base-server/utils"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
@@ -32,7 +33,7 @@ func NewUserLoginLogic(appCtx *app.Context) *UserLoginLogic {
 	return &UserLoginLogic{appCtx: appCtx}
 }
 
-func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error) {
+func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims) (*dto.RegisterRes, error) {
 	id := l.appCtx.SnowflakeNode().Generate().Int64()
 	sex := req.Sex
 	if sex == nil {
@@ -97,11 +98,11 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq) (*dto.RegisterRes, error)
 	return resp, nil
 }
 
-func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq) (*dto.LoginRes, error) {
+func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
 	return nil, nil
 }
 
-func (l *UserLoginLogic) TokenLogin(req dto.TokenLoginReq) (*dto.LoginRes, error) {
+func (l *UserLoginLogic) TokenLogin(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
 	uId, err := utils.CheckUserToken(req.Token, l.appCtx.Config().Cipher)
 	if err != nil {
 		l.appCtx.Logger().Error(err, req)

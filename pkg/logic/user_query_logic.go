@@ -1,6 +1,7 @@
 package logic
 
 import (
+	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"github.com/thk-im/thk-im-user-server/pkg/errorx"
@@ -14,7 +15,7 @@ func NewUserQueryLogic(appCtx *app.Context) *UserQueryLogic {
 	return &UserQueryLogic{appCtx: appCtx}
 }
 
-func (l *UserQueryLogic) QueryUserBasicInfoById(id int64) (*dto.BasicUser, error) {
+func (l *UserQueryLogic) QueryUserBasicInfoById(id int64, claims baseDto.ThkClaims) (*dto.BasicUser, error) {
 	userInfo, err := getUserInfo(id, l.appCtx)
 	if err != nil {
 		return nil, err
@@ -22,7 +23,7 @@ func (l *UserQueryLogic) QueryUserBasicInfoById(id int64) (*dto.BasicUser, error
 	return userDto2UserBasicDto(userInfo), err
 }
 
-func (l *UserQueryLogic) QueryUserByDisplayId(displayId string) (*dto.BasicUser, error) {
+func (l *UserQueryLogic) QueryUserByDisplayId(displayId string, claims baseDto.ThkClaims) (*dto.BasicUser, error) {
 	id, err := l.appCtx.UserModel().FindUIdByDisplayId(displayId)
 	if err != nil {
 		return nil, err
@@ -30,7 +31,7 @@ func (l *UserQueryLogic) QueryUserByDisplayId(displayId string) (*dto.BasicUser,
 	if id == nil {
 		return nil, errorx.UserNotExisted
 	}
-	return l.QueryUserBasicInfoById(*id)
+	return l.QueryUserBasicInfoById(*id, nil)
 }
 
 func userDto2UserBasicDto(user *dto.User) *dto.BasicUser {
