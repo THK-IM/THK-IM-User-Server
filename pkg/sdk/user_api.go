@@ -30,12 +30,7 @@ type (
 	}
 )
 
-func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
-	dataBytes, errJson := json.Marshal(req)
-	if errJson != nil {
-		d.logger.Errorf("LoginByToken %v %v", req, errJson)
-		return nil, errJson
-	}
+func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, error) {
 	url := fmt.Sprintf("%s%s", d.endpoint, tokenLoginPath)
 	request := d.client.R()
 	for k, v := range claims {
@@ -44,7 +39,6 @@ func (d defaultUserApi) LoginByToken(req dto.TokenLoginReq, claims baseDto.ThkCl
 	}
 	res, errRequest := request.
 		SetHeader("Content-Type", contentType).
-		SetBody(dataBytes).
 		Post(url)
 	if errRequest != nil {
 		d.logger.Errorf("LoginByToken %v %v", req, errRequest)
