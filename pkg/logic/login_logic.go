@@ -106,7 +106,7 @@ func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq, claims baseDto.Th
 func (l *UserLoginLogic) TokenLogin(claims baseDto.ThkClaims) (*dto.LoginRes, error) {
 	uId, err := utils.CheckUserToken(claims.GetToken(), l.appCtx.Config().Cipher)
 	if err != nil {
-		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v", err)
+		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v %v", claims.GetToken(), err)
 		return nil, errorx.UserTokenError
 	}
 	userInfo, errUser := getUserInfo(*uId, l.appCtx)

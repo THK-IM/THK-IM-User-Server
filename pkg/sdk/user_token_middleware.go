@@ -16,20 +16,20 @@ const (
 func UserTokenAuth(userApi UserApi, logger *logrus.Entry) gin.HandlerFunc {
 	return func(context *gin.Context) {
 		claims := context.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
-		userInfo, err := userApi.LoginByToken(claims)
+		userInfoResp, err := userApi.LoginByToken(claims)
 		if err != nil {
 			logger.WithFields(logrus.Fields(claims)).Errorf("UserTokenAuth: %v", err)
 			baseDto.ResponseForbidden(context)
 			context.Abort()
 			return
 		}
-		if userInfo.User == nil {
-			logger.WithFields(logrus.Fields(claims)).Errorf("UserTokenAuth: %v", userInfo)
+		if userInfoResp.User == nil || userInfoResp.User.Id == 0 {
+			logger.WithFields(logrus.Fields(claims)).Errorf("UserTokenAuth: %v", userInfoResp)
 			baseDto.ResponseForbidden(context)
 			context.Abort()
 			return
 		}
-		context.Set(UidKey, userInfo.User.Id)
+		context.Set(UidKey, userInfoResp.User.Id)
 		context.Next()
 	}
 }
