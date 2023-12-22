@@ -20,7 +20,7 @@ const (
 
 type (
 	UserApi interface {
-		LoginByToken(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error)
+		LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, error)
 	}
 
 	defaultUserApi struct {
@@ -41,14 +41,14 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 		SetHeader("Content-Type", contentType).
 		Post(url)
 	if errRequest != nil {
-		d.logger.Errorf("LoginByToken %v %v", req, errRequest)
+		d.logger.Errorf("LoginByToken %v %v", claims, errRequest)
 		return nil, errRequest
 	}
 	if res.StatusCode() != http.StatusOK {
 		errRes := &errorx.ErrorX{}
 		e := json.Unmarshal(res.Body(), errRes)
 		if e != nil {
-			d.logger.Errorf("LoginByToken: %v %v", req, e)
+			d.logger.Errorf("LoginByToken: %v %v", claims, e)
 			return nil, e
 		} else {
 			return nil, errRes
@@ -57,10 +57,10 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 		resp := &dto.LoginRes{}
 		e := json.Unmarshal(res.Body(), resp)
 		if e != nil {
-			d.logger.Errorf("LoginByToken: %v %v", req, e)
+			d.logger.Errorf("LoginByToken: %v %v", claims, e)
 			return nil, e
 		} else {
-			d.logger.Infof("LoginByToken: %v %v", req, resp)
+			d.logger.Infof("LoginByToken: %v %v", claims, resp)
 			return resp, nil
 		}
 	}
