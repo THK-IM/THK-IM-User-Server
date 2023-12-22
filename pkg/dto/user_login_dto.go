@@ -20,11 +20,6 @@ type AccountLoginReq struct {
 	Platform *string `json:"platform" binding:"required"`
 }
 
-type TokenLoginReq struct {
-	Token    string `json:"token" binding:"required"`
-	Platform string `json:"platform" binding:"required"`
-}
-
 type ThirdPartLoginReq struct {
 	Channel    *string `json:"channel" binding:"required"`
 	ThirdToken *string `json:"third_token" binding:"required"`

@@ -59,20 +59,12 @@ func userTokenLogin(appCtx *app.Context) gin.HandlerFunc {
 	userLoginLogic := logic.NewUserLoginLogic(appCtx)
 	return func(ctx *gin.Context) {
 		claims := ctx.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
-		var req dto.TokenLoginReq
-		err := ctx.BindJSON(&req)
-		if err != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userTokenLogin %v", err)
-			baseDto.ResponseBadRequest(ctx)
-			return
-		}
-
-		resp, errReq := userLoginLogic.TokenLogin(req, claims)
+		resp, errReq := userLoginLogic.TokenLogin(claims)
 		if errReq != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userTokenLogin %v %v", req, errReq)
+			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userTokenLogin %v", errReq)
 			baseDto.ResponseInternalServerError(ctx, errReq)
 		} else {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("userTokenLogin %v %v", req, resp)
+			appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("userTokenLogin %v", resp)
 			baseDto.ResponseSuccess(ctx, resp)
 		}
 	}

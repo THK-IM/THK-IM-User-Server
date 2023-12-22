@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/o1egl/govatar"
 	"github.com/redis/go-redis/v9"
+	"github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	"github.com/thk-im/thk-im-base-server/utils"
@@ -57,10 +58,10 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 			avatarKey := fmt.Sprintf("avatar/%d/%s", id, fileName)
 			avatarUrl, err = l.appCtx.ObjectStorage().UploadObject(avatarKey, filePath)
 			if err != nil {
-				l.appCtx.Logger().Error("upload object file error: ", err)
+				l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("Register %v %v", req, err)
 			}
 		} else {
-			l.appCtx.Logger().Error("go avatar generate file error: ", err)
+			l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("Register %v %v", req, err)
 		}
 	}
 
@@ -75,7 +76,7 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 		qrCodeKey := fmt.Sprintf("user/avatar/%d/%s", id, qrFileName)
 		qrcodeUrl, errQrcode = l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
 		if errQrcode != nil {
-			l.appCtx.Logger().Error("upload object file error: ", errQrcode)
+			l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("Register %v %v", req, errQrcode)
 		}
 	}
 
@@ -102,15 +103,15 @@ func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq, claims baseDto.Th
 	return nil, nil
 }
 
-func (l *UserLoginLogic) TokenLogin(req dto.TokenLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
-	uId, err := utils.CheckUserToken(req.Token, l.appCtx.Config().Cipher)
+func (l *UserLoginLogic) TokenLogin(claims baseDto.ThkClaims) (*dto.LoginRes, error) {
+	uId, err := utils.CheckUserToken(claims.GetToken(), l.appCtx.Config().Cipher)
 	if err != nil {
-		l.appCtx.Logger().Error(err, req)
+		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v", err)
 		return nil, errorx.UserTokenError
 	}
 	userInfo, errUser := getUserInfo(*uId, l.appCtx)
 	if errUser != nil {
-		l.appCtx.Logger().Error(err, req)
+		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v", err)
 		return nil, errUser
 	}
 	loginRes := &dto.LoginRes{
