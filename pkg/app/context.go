@@ -16,6 +16,10 @@ func (c *Context) UserModel() model.UserModel {
 	return c.modelMap["user"].(model.UserModel)
 }
 
+func (c *Context) UserOnlineRecordModel() model.UserOnlineRecordModel {
+	return c.Context.ModelMap["user_online_record"].(model.UserOnlineRecordModel)
+}
+
 func (c *Context) Init(config *conf.Config) {
 	c.Context = &server.Context{}
 	c.Context.Init(config)

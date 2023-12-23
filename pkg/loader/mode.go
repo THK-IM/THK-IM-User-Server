@@ -16,6 +16,8 @@ func LoadModels(modeConfigs []conf.Model, database *gorm.DB, logger *logrus.Entr
 		var m interface{}
 		if ms.Name == "user" {
 			m = model.NewUserModel(database, logger, snowflakeNode, ms.Shards)
+		} else if ms.Name == "user_online_record" {
+			m = model.NewUserOnlineRecordModel(database, logger, snowflakeNode, ms.Shards)
 		}
 		modelMap[ms.Name] = m
 	}

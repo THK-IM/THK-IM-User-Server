@@ -15,4 +15,6 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 	userGroup.POST("/login/third_part", userThirdPartLogin(appCtx)) // Todo: 第三方登录
 	userGroup.GET("/:id", queryUser(appCtx))                        // 根据id查询用户基础信息
 	userGroup.GET("", searchUsers(appCtx))                          // 搜索用户信息
+	userGroup.POST("/online", addUserOnlineRecord(appCtx))          // 更新用户上线记录
+
 }

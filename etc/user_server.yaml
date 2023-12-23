@@ -41,6 +41,8 @@ Models:
     Shards: 5
   - Name: "account"
     Shards: 5
+  - Name: "user_online_record"
+    Shards: 5
 Metric:
   Endpoint: "/metrics"
   PushGateway: ""
