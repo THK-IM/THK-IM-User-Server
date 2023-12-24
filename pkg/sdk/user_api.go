@@ -7,7 +7,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/thk-im/thk-im-base-server/conf"
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
-	"github.com/thk-im/thk-im-base-server/errorx"
+	baseErrorx "github.com/thk-im/thk-im-base-server/errorx"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"net/http"
 	"time"
@@ -45,20 +45,8 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 		return nil, errRequest
 	}
 	if res.StatusCode() != http.StatusOK {
-		errRes := &errorx.ErrorX{}
-		if len(res.Body()) == 0 {
-			errRes.Code = res.StatusCode()
-			errRes.Msg = fmt.Sprintf("http status code %d", res.StatusCode())
-			return nil, errRes
-		}
-		err := json.Unmarshal(res.Body(), errRes)
-		if err != nil {
-			errRes.Code = res.StatusCode()
-			errRes.Msg = fmt.Sprintf("http status code %d", res.StatusCode())
-			return nil, errRes
-		} else {
-			return nil, errRes
-		}
+		errRes := baseErrorx.NewErrorXFromResp(res)
+		return nil, errRes
 	} else {
 		resp := &dto.LoginRes{}
 		e := json.Unmarshal(res.Body(), resp)
