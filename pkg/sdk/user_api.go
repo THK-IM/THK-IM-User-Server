@@ -46,10 +46,16 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 	}
 	if res.StatusCode() != http.StatusOK {
 		errRes := &errorx.ErrorX{}
-		e := json.Unmarshal(res.Body(), errRes)
-		if e != nil {
-			d.logger.Errorf("LoginByToken: %v %v", claims, e)
-			return nil, e
+		if len(res.Body()) == 0 {
+			errRes.Code = res.StatusCode()
+			errRes.Msg = fmt.Sprintf("http status code %d", res.StatusCode())
+			return nil, errRes
+		}
+		err := json.Unmarshal(res.Body(), errRes)
+		if err != nil {
+			errRes.Code = res.StatusCode()
+			errRes.Msg = fmt.Sprintf("http status code %d", res.StatusCode())
+			return nil, errRes
 		} else {
 			return nil, errRes
 		}
