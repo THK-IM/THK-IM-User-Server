@@ -46,6 +46,7 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 	}
 	if res.StatusCode() != http.StatusOK {
 		errRes := baseErrorx.NewErrorXFromResp(res)
+		d.logger.Errorf("LoginByToken: %v %v", claims, errRes)
 		return nil, errRes
 	} else {
 		resp := &dto.LoginRes{}
