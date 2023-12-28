@@ -9,7 +9,7 @@ require (
 	github.com/redis/go-redis/v9 v9.3.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e
-	github.com/thk-im/thk-im-base-server v0.0.0-20231224135314-259b7d0510fc
+	github.com/thk-im/thk-im-base-server v0.0.0-20231228134043-304d36641379
 	gorm.io/gorm v1.25.5
 )
 
