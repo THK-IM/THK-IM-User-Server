@@ -18,7 +18,7 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 	userGroup.POST("/login/token", userTokenLogin(appCtx))          // 通过token登录
 	userGroup.POST("/login/third_part", userThirdPartLogin(appCtx)) // Todo: 第三方登录
 
-	queryGroup := userGroup.GET("/query")
+	queryGroup := userGroup.Group("/query")
 	queryGroup.Use(tokenAuth)
 	queryGroup.GET("/:id", queryUser(appCtx)) // 根据id查询用户基础信息
 	queryGroup.GET("", searchUsers(appCtx))   // 搜索用户信息

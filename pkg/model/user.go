@@ -151,7 +151,11 @@ func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 	if err != nil {
 		return nil, err
 	} else {
-		return &user.Id, nil
+		if user.Id == 0 {
+			return nil, nil
+		} else {
+			return &user.Id, nil
+		}
 	}
 }
 
