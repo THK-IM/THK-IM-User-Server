@@ -36,9 +36,9 @@ func NewUserLoginLogic(appCtx *app.Context) *UserLoginLogic {
 
 func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims) (*dto.RegisterRes, error) {
 	id := l.appCtx.SnowflakeNode().Generate().Int64()
-	sex := req.Sex
-	if sex == nil {
-		sex = &sexMale
+	reqSex := req.Sex
+	if reqSex == nil {
+		reqSex = &sexMale
 	}
 	nickname := req.Nickname
 	if nickname == nil {
@@ -50,7 +50,7 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 		fileName := fmt.Sprintf("%s-%d.jpg", *nickname, time.Now().UnixMilli()/1000)
 		filePath := fmt.Sprintf("tmp/%s", fileName)
 		male := govatar.MALE
-		if *sex == sexFemale {
+		if *reqSex == sexFemale {
 			male = govatar.FEMALE
 		}
 		err := govatar.GenerateFileForUsername(male, *nickname, filePath)
@@ -80,8 +80,8 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 		}
 	}
 
-	user, err := l.appCtx.UserModel().AddUser(id, req.Account, req.Password, nil, req.Nickname,
-		avatarUrl, qrcodeUrl, sex, nil, model.ChannelDefault,
+	user, err := l.appCtx.UserModel().AddUser(id, req.Account, req.Password, nil, nickname,
+		avatarUrl, qrcodeUrl, reqSex, nil, model.ChannelDefault,
 	)
 	if err != nil {
 		return nil, err

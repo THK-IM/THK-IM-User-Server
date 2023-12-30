@@ -36,13 +36,13 @@ func searchUsers(appCtx *app.Context) gin.HandlerFunc {
 	l := logic.NewUserQueryLogic(appCtx)
 	return func(context *gin.Context) {
 		claims := context.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
-		displayId := context.Query("id")
+		displayId := context.Query("display_id")
 		if displayId == "" {
 			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("searchUsers %v", "display id is empty string")
 			baseDto.ResponseBadRequest(context)
 			return
 		}
-		resp, err := l.QueryUserByDisplayId(displayId, claims)
+		resp, err := l.QueryUsers(displayId, claims)
 		if err != nil {
 			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("searchUsers %v %v", displayId, err)
 			baseDto.ResponseInternalServerError(context, err)

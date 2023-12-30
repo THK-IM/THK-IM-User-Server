@@ -23,7 +23,7 @@ func (l *UserQueryLogic) QueryUserBasicInfoById(id int64, claims baseDto.ThkClai
 	return userDto2UserBasicDto(userInfo), err
 }
 
-func (l *UserQueryLogic) QueryUserByDisplayId(displayId string, claims baseDto.ThkClaims) (*dto.BasicUser, error) {
+func (l *UserQueryLogic) QueryUsers(displayId string, claims baseDto.ThkClaims) (*dto.BasicUser, error) {
 	id, err := l.appCtx.UserModel().FindUIdByDisplayId(displayId)
 	if err != nil {
 		return nil, err
