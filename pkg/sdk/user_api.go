@@ -65,8 +65,12 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 
 func (d defaultUserApi) BatchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error) {
 	url := fmt.Sprintf("%s%s", d.endpoint, batchQueryUser)
-	for _, id := range req.Ids {
-		url += fmt.Sprintf("&ids=%d", id)
+	for i, id := range req.Ids {
+		if i == 0 {
+			url += fmt.Sprintf("?ids=%d", id)
+		} else {
+			url += fmt.Sprintf("&ids=%d", id)
+		}
 	}
 	request := d.client.R()
 	for k, v := range claims {
