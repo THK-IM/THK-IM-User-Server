@@ -55,7 +55,7 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 		}
 		err := govatar.GenerateFileForUsername(male, *nickname, filePath)
 		if err == nil {
-			avatarKey := fmt.Sprintf("avatar/%d/%s", id, fileName)
+			avatarKey := fmt.Sprintf("user/%d/avatar/%s", id, fileName)
 			avatarUrl, err = l.appCtx.ObjectStorage().UploadObject(avatarKey, filePath)
 			if err != nil {
 				l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("Register %v %v", req, err)
@@ -73,7 +73,7 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 	if errQrcode != nil {
 		l.appCtx.Logger().Error(errQrcode)
 	} else {
-		qrCodeKey := fmt.Sprintf("user/avatar/%d/%s", id, qrFileName)
+		qrCodeKey := fmt.Sprintf("user/%d/qrcode/%s", id, qrFileName)
 		qrcodeUrl, errQrcode = l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
 		if errQrcode != nil {
 			l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("Register %v %v", req, errQrcode)
