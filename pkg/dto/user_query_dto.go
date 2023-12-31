@@ -7,3 +7,7 @@ type BasicUser struct {
 	Nickname  *string `json:"nickname,omitempty"`
 	Sex       *int8   `json:"sex,omitempty"`
 }
+
+type BatchQueryUser struct {
+	Ids []int64 `json:"ids" form:"ids"`
+}

@@ -15,12 +15,14 @@ import (
 
 const (
 	tokenLoginPath string = "/user/login/token"
+	batchQueryUser string = "/user/query/batch"
 	contentType    string = "application/json"
 )
 
 type (
 	UserApi interface {
 		LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, error)
+		batchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error)
 	}
 
 	defaultUserApi struct {
@@ -56,6 +58,40 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 			return nil, e
 		} else {
 			d.logger.Infof("LoginByToken: %v %v", claims, resp)
+			return resp, nil
+		}
+	}
+}
+
+func (d defaultUserApi) batchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error) {
+	url := fmt.Sprintf("%s%s", d.endpoint, batchQueryUser)
+	for _, id := range req.Ids {
+		url += fmt.Sprintf("&ids=%d", id)
+	}
+	request := d.client.R()
+	for k, v := range claims {
+		vs := v.(string)
+		request.SetHeader(k, vs)
+	}
+	res, errRequest := request.
+		SetHeader("Content-Type", contentType).
+		Get(url)
+	if errRequest != nil {
+		d.logger.Errorf("batchQueryUsers %v %v", claims, errRequest)
+		return nil, errRequest
+	}
+	if res.StatusCode() != http.StatusOK {
+		errRes := baseErrorx.NewErrorXFromResp(res)
+		d.logger.Errorf("batchQueryUsers: %v %v", claims, errRes)
+		return nil, errRes
+	} else {
+		resp := make(map[int64]*dto.BasicUser)
+		e := json.Unmarshal(res.Body(), &resp)
+		if e != nil {
+			d.logger.Errorf("batchQueryUsers: %v %v", claims, e)
+			return nil, e
+		} else {
+			d.logger.Infof("batchQueryUsers: %v %v", claims, resp)
 			return resp, nil
 		}
 	}

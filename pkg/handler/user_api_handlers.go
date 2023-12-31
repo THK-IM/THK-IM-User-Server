@@ -20,8 +20,9 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 
 	queryGroup := userGroup.Group("/query")
 	queryGroup.Use(tokenAuth)
-	queryGroup.GET("/:id", queryUser(appCtx)) // 根据id查询用户基础信息
-	queryGroup.GET("", searchUsers(appCtx))   // 搜索用户信息
+	queryGroup.GET("/:id", queryUser(appCtx))         // 根据id查询用户基础信息
+	queryGroup.GET("/batch", batchQueryUsers(appCtx)) // 根据[id]查询用户基础信息
+	queryGroup.GET("", searchUsers(appCtx))           // 根据displayId搜索用户信息
 
 	systemGroup := userGroup.Group("/system")
 	systemGroup.Use(ipAuth)

@@ -46,6 +46,7 @@ type (
 		UpdateUser(id int64, phone, nickname, avatar, qrcode *string, sex *int8, birthday *int64) error
 		FindOne(id int64) (*User, error)
 		FindUIdByDisplayId(displayId string) (*int64, error)
+		FineUsers(ids []int64) ([]*User, error)
 	}
 
 	defaultUserModel struct {
@@ -157,6 +158,32 @@ func (d defaultUserModel) FindUIdByDisplayId(displayId string) (*int64, error) {
 			return &user.Id, nil
 		}
 	}
+}
+
+func (d defaultUserModel) FineUsers(ids []int64) ([]*User, error) {
+	results := make([]*User, 0)
+	if len(ids) == 0 {
+		return results, nil
+	}
+	tableMap := make(map[string][]int64)
+	for _, id := range ids {
+		tableName := d.genUserTableName(id)
+		if tableMap[tableName] == nil {
+			tableMap[tableName] = []int64{id}
+		} else {
+			tableMap[tableName] = append(tableMap[tableName], id)
+		}
+	}
+	for tableName, tableIds := range tableMap {
+		users := make([]*User, 0)
+		sql := fmt.Sprintf("select * from %s where id in ?", tableName)
+		err := d.db.Raw(sql, tableIds).Scan(&users).Error
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, users...)
+	}
+	return results, nil
 }
 
 func (d defaultUserModel) genUserDisplayIdTableName(displayId string) string {
