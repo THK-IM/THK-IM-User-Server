@@ -22,7 +22,7 @@ const (
 type (
 	UserApi interface {
 		LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, error)
-		batchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error)
+		BatchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error)
 	}
 
 	defaultUserApi struct {
@@ -63,7 +63,7 @@ func (d defaultUserApi) LoginByToken(claims baseDto.ThkClaims) (*dto.LoginRes, e
 	}
 }
 
-func (d defaultUserApi) batchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error) {
+func (d defaultUserApi) BatchQueryUsers(req *dto.BatchQueryUser, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error) {
 	url := fmt.Sprintf("%s%s", d.endpoint, batchQueryUser)
 	for _, id := range req.Ids {
 		url += fmt.Sprintf("&ids=%d", id)
