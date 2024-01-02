@@ -21,7 +21,10 @@ func init() {
 func main() {
 
 	configPath := "etc/user_server.yaml"
-	config := conf.LoadConfig(configPath)
+	config := &conf.Config{}
+	if err := conf.LoadConfig(configPath, config); err != nil {
+		panic(err)
+	}
 
 	appCtx := &app.Context{}
 	appCtx.Init(config)
