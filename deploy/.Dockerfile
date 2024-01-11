@@ -6,7 +6,7 @@ RUN mkdir -p /opt/${PROJECT_NAME}
 WORKDIR /opt/${PROJECT_NAME}
 COPY go.mod ./
 RUN go mod download
-ADD .. .
+ADD . .
 RUN go build -o ${PROJECT_NAME} main.go
 
 FROM golang:1.20.0-alpine as Runner
@@ -16,7 +16,7 @@ WORKDIR /opt/${PROJECT_NAME}
 COPY --from=builder /opt/${PROJECT_NAME}/${PROJECT_NAME} /opt/${PROJECT_NAME}/${PROJECT_NAME}
 COPY --from=builder /opt/${PROJECT_NAME}/etc/ /opt/${PROJECT_NAME}/etc/
 COPY --from=builder /opt/${PROJECT_NAME}/sql/ /opt/${PROJECT_NAME}/sql/
-EXPOSE 420000
+EXPOSE 10000
 CMD "./$PROJECT_NAME --config-file ./etc/${PROJECT_NAME}.yaml"
 
 
