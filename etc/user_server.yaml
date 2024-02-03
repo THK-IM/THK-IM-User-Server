@@ -14,6 +14,7 @@ Logger:
   Dir: logs
   RetainAge: 720
   RotationAge: 1
+  ElasticEndpoint: ${ELASTIC_ENDPOINT}
 RedisSource:
   Endpoint: ${REDIS_ENDPOINT}
   Uri: "/0"
@@ -29,7 +30,7 @@ MysqlSource:
   ConnMaxLifeTime: 3600
   ConnMaxIdleTime: 3600
 ObjectStorage:
-  Endpoint: ${OS_Endpoint}
+  Endpoint: ${OS_ENDPOINT}
   Bucket: ${OS_BUCKET}
   AK: ${OS_AK}
   SK: ${OS_SK}
