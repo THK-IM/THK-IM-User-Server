@@ -16,6 +16,7 @@ const ChannelApple = "apple"
 
 type (
 	Account struct {
+		Id         int64   `gorm:"id"`
 		UserId     int64   `gorm:"user_id"`
 		Account    string  `gorm:"account"`
 		Password   *string `gorm:"password"`
