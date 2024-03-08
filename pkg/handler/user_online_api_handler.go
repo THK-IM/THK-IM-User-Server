@@ -6,7 +6,7 @@ import (
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 )
 
-func addUserOnlineRecord(appCtx *app.Context) gin.HandlerFunc {
+func postUserOnlineStatus(appCtx *app.Context) gin.HandlerFunc {
 	// TODO: to be implemented
 	// userLoginLogic := logic.NewUserLoginLogic(appCtx)
 	return func(ctx *gin.Context) {

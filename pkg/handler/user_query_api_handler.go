@@ -33,12 +33,12 @@ func queryUser(appCtx *app.Context) gin.HandlerFunc {
 	}
 }
 
-func batchQueryUsers(appCtx *app.Context) gin.HandlerFunc {
+func queryUsers(appCtx *app.Context) gin.HandlerFunc {
 	l := logic.NewUserQueryLogic(appCtx)
 	return func(context *gin.Context) {
 		claims := context.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
 
-		var req dto.BatchQueryUser
+		var req dto.QueryUsers
 		if err := context.ShouldBindQuery(&req); err != nil {
 			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("batchQueryUsers %s", err.Error())
 			baseDto.ResponseBadRequest(context)
