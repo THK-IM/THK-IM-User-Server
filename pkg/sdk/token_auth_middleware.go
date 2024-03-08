@@ -23,7 +23,7 @@ func UserTokenAuth(loginApi LoginApi, logger *logrus.Entry) gin.HandlerFunc {
 			context.Abort()
 			return
 		}
-		if userInfoResp.User == nil || userInfoResp.User.Id == 0 {
+		if userInfoResp.Id <= 0 {
 			logger.WithFields(logrus.Fields(claims)).Errorf("UserTokenAuth: %v", userInfoResp)
 			baseDto.ResponseForbidden(context)
 			context.Abort()
