@@ -115,8 +115,8 @@ func (l *UserLoginLogic) TokenLogin(claims baseDto.ThkClaims) (*dto.LoginRes, er
 		return nil, errUser
 	}
 	loginRes := &dto.LoginRes{
-		Id:   userInfo.Id,
-		User: userInfo,
+		Token: claims.GetToken(),
+		User:  userInfo,
 	}
 	return loginRes, nil
 }
