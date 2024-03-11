@@ -27,8 +27,8 @@ type ThirdPartLoginReq struct {
 }
 
 type LoginRes struct {
-	Id   int64 `json:"id"`
-	User *User `json:"user,omitempty"`
+	User  *User  `json:"user"`
+	Token string `json:"token,omitempty"`
 }
 
 type User struct {
