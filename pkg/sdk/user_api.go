@@ -15,7 +15,7 @@ import (
 
 const (
 	queryUserPath           string = "/user"
-	PutUserOnlineStatusPath string = "/user/:id/online_status"
+	PutUserOnlineStatusPath string = "/user/online_status"
 )
 
 type (
