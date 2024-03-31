@@ -21,7 +21,7 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 	userGroup := httpEngine.Group("/user")
 	userGroup.Use(tokenAuth)
 	userGroup.GET("/:id", queryUser(appCtx)) // 根据id查询用户基础信息
-	userGroup.POST("/:id/online_status", postUserOnlineStatus(appCtx))
+	userGroup.POST("/online_status", postUserOnlineStatus(appCtx))
 	userGroup.GET("", queryUsers(appCtx))
 	userGroup.GET("/search", searchUsers(appCtx))
 

@@ -7,8 +7,6 @@ import (
 )
 
 func postUserOnlineStatus(appCtx *app.Context) gin.HandlerFunc {
-	// TODO: to be implemented
-	// userLoginLogic := logic.NewUserLoginLogic(appCtx)
 	return func(ctx *gin.Context) {
 		baseDto.ResponseBadRequest(ctx)
 	}
