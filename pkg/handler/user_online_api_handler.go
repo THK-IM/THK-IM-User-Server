@@ -8,6 +8,6 @@ import (
 
 func postUserOnlineStatus(appCtx *app.Context) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		baseDto.ResponseBadRequest(ctx)
+		baseDto.ResponseSuccess(ctx, nil)
 	}
 }
