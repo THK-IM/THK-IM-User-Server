@@ -10,12 +10,16 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/skip2/go-qrcode"
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
+	baseErr "github.com/thk-im/thk-im-base-server/errorx"
 	"github.com/thk-im/thk-im-base-server/utils"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
 	"github.com/thk-im/thk-im-user-server/pkg/errorx"
 	"github.com/thk-im/thk-im-user-server/pkg/model"
+	"golang.org/x/crypto/bcrypt"
 	"image/color"
+	"os"
+	"strings"
 	"time"
 )
 
@@ -36,6 +40,24 @@ func NewUserLoginLogic(appCtx *app.Context) *UserLoginLogic {
 
 func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims) (*dto.RegisterRes, error) {
 	id := l.appCtx.SnowflakeNode().Generate().Int64()
+	if (req.Account == nil) != (req.Password == nil) {
+		return nil, baseErr.ErrParamsError
+	}
+	if req.Account != nil {
+		account := strings.ToLower(strings.TrimSpace(*req.Account))
+		if account == "" || len(account) > 64 || *req.Password == "" || len(*req.Password) > 72 {
+			return nil, baseErr.ErrParamsError
+		}
+		hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return nil, err
+		}
+		hashed := string(hash)
+		req.Account, req.Password = &account, &hashed
+	}
+	if err := os.MkdirAll("tmp", 0700); err != nil {
+		return nil, err
+	}
 	reqSex := req.Sex
 	if reqSex == nil {
 		reqSex = &sexMale
@@ -46,9 +68,10 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 		nickname = &newNickName
 	}
 	avatarUrl := req.Avatar
-	if avatarUrl == nil {
-		fileName := fmt.Sprintf("%s-%d.jpg", *nickname, time.Now().UnixMilli()/1000)
+	if avatarUrl == nil && l.appCtx.ObjectStorage() != nil {
+		fileName := fmt.Sprintf("%d.jpg", id)
 		filePath := fmt.Sprintf("tmp/%s", fileName)
+		defer os.Remove(filePath)
 		male := govatar.MALE
 		if *reqSex == sexFemale {
 			male = govatar.FEMALE
@@ -66,13 +89,14 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 	}
 
 	var qrcodeUrl *string = nil
-	qrFileName := fmt.Sprintf("%s-%d-qrcode.png", *nickname, time.Now().UnixMilli()/1000)
+	qrFileName := fmt.Sprintf("%d-qrcode.png", id)
 	qrFilePath := fmt.Sprintf("tmp/%s", qrFileName)
+	defer os.Remove(qrFilePath)
 	url := fmt.Sprintf("https://api.thkim.com/user/%d", id)
 	errQrcode := qrcode.WriteColorFile(url, qrcode.Medium, 256, color.Black, color.White, qrFilePath)
 	if errQrcode != nil {
 		l.appCtx.Logger().Error(errQrcode)
-	} else {
+	} else if l.appCtx.ObjectStorage() != nil {
 		qrCodeKey := fmt.Sprintf("user/%d/qrcode/%s", id, qrFileName)
 		qrcodeUrl, errQrcode = l.appCtx.ObjectStorage().UploadObject(qrCodeKey, qrFilePath)
 		if errQrcode != nil {
@@ -81,14 +105,14 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 	}
 
 	user, err := l.appCtx.UserModel().AddUser(id, req.Account, req.Password, nil, nickname,
-		avatarUrl, qrcodeUrl, reqSex, nil, model.ChannelDefault,
+		avatarUrl, qrcodeUrl, reqSex, req.Birthday, model.ChannelDefault,
 	)
 	if err != nil {
 		return nil, err
 	}
 
-	token, errToken := utils.GenerateUserToken(user.Id, l.appCtx.Config().Name, l.appCtx.Config().Cipher)
-	if err != nil {
+	token, errToken := l.issueToken(user.Id, 0)
+	if errToken != nil {
 		return nil, errToken
 	}
 	dtoUser := userModel2UserDto(user)
@@ -100,16 +124,24 @@ func (l *UserLoginLogic) Register(req dto.RegisterReq, claims baseDto.ThkClaims)
 }
 
 func (l *UserLoginLogic) AccountLogin(req dto.AccountLoginReq, claims baseDto.ThkClaims) (*dto.LoginRes, error) {
-	return nil, nil
+	account, err := l.appCtx.UserModel().Authenticate(strings.ToLower(strings.TrimSpace(*req.Account)), *req.Password)
+	if err != nil {
+		return nil, err
+	}
+	user, err := getUserInfo(account.UserId, l.appCtx)
+	if err != nil {
+		return nil, err
+	}
+	token, err := l.issueToken(account.UserId, account.Version)
+	return &dto.LoginRes{User: user, Token: token}, err
 }
 
 func (l *UserLoginLogic) TokenLogin(claims baseDto.ThkClaims) (*dto.LoginRes, error) {
-	uId, err := utils.CheckUserToken(claims.GetToken(), l.appCtx.Config().Cipher)
+	auth, err := l.ValidateToken(claims.GetToken())
 	if err != nil {
-		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v %v", claims.GetToken(), err)
-		return nil, errorx.UserTokenError
+		return nil, err
 	}
-	userInfo, errUser := getUserInfo(*uId, l.appCtx)
+	userInfo, errUser := getUserInfo(auth.UID, l.appCtx)
 	if errUser != nil {
 		l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("TokenLogin %v", err)
 		return nil, errUser
@@ -133,6 +165,9 @@ func getUserInfo(uId int64, appCtx *app.Context) (*dto.User, error) {
 		if errDb != nil {
 			appCtx.Logger().Error(errDb)
 			return nil, errDb
+		}
+		if user.Id == 0 {
+			return nil, errorx.UserNotExisted
 		}
 		userInfo := userModel2UserDto(user)
 		errCache = setUserInfoCache(userInfo, appCtx)

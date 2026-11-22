@@ -10,18 +10,23 @@ func RegisterUserApiHandlers(appCtx *app.Context) {
 
 	tokenAuth := userTokenAuth(appCtx)
 	ipAuth := baseMiddleware.WhiteIpAuth(appCtx.Config().IpWhiteList, appCtx.Logger())
+	httpEngine.POST("/system/message/check", ipAuth, checkMessage(appCtx.ContactChecker))
 
 	loginGroup := httpEngine.Group("/login")
-	loginGroup.POST("/register", userRegister(appCtx))         // 注册
-	loginGroup.POST("/account", userAccountLogin(appCtx))      // Todo: 通过账号登录
-	loginGroup.POST("/code", userCodeLogin(appCtx))            // Todo: 通过短信/邮件等验证码登录
+	loginGroup.POST("/register", userRegister(appCtx))    // 注册
+	loginGroup.POST("/account", userAccountLogin(appCtx)) // 账号密码登录
+	loginGroup.POST("/code", userCodeLogin(appCtx))       // Todo: 通过短信/邮件等验证码登录
+	loginGroup.POST("/logout", logout(appCtx))
 	loginGroup.POST("/token", userTokenLogin(appCtx))          // 通过token登录
 	loginGroup.POST("/third_part", userThirdPartLogin(appCtx)) // Todo: 第三方登录
 
 	userGroup := httpEngine.Group("/user")
 	userGroup.Use(tokenAuth)
 	userGroup.GET("/:id", queryUser(appCtx)) // 根据id查询用户基础信息
-	userGroup.POST("/online_status", postUserOnlineStatus(appCtx))
+	httpEngine.POST("/user/online_status", ipAuth, postUserOnlineStatus(appCtx))
+	userGroup.PUT("/password", changePassword(appCtx))
+	userGroup.GET("/me", ownProfile(appCtx))
+	userGroup.PATCH("/me", updateProfile(appCtx))
 	userGroup.GET("", queryUsers(appCtx))
 	userGroup.GET("/search", searchUsers(appCtx))
 

@@ -1,13 +1,6 @@
 package dto
 
-type BasicUser struct {
-	Id        int64   `json:"id"`
-	DisplayId string  `json:"display_id"`
-	Avatar    *string `json:"avatar,omitempty"`
-	Nickname  *string `json:"nickname,omitempty"`
-	Sex       *int8   `json:"sex,omitempty"`
-}
+import msg "github.com/thk-im/thk-im-msgapi-server/pkg/dto"
 
-type QueryUsers struct {
-	Ids []int64 `json:"ids" form:"ids"`
-}
+type BasicUser = msg.BasicUser
+type QueryUsers = msg.QueryUsers

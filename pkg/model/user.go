@@ -43,6 +43,9 @@ type (
 	}
 
 	UserModel interface {
+		Authenticate(account, password string) (*LoginAccount, error)
+		ChangePassword(uid int64, oldPassword, newPassword string, expectedVersion int64) (int64, error)
+		TokenVersion(uid int64) (int64, error)
 		AddUser(id int64, account, password, phone, nickname, avatar, qrcode *string, sex *int8, birthday *int64, channel string) (*User, error)
 		UpdateUser(id int64, phone, nickname, avatar, qrcode *string, sex *int8, birthday *int64) error
 		FindOne(id int64) (*User, error)
@@ -100,12 +103,15 @@ func (d defaultUserModel) AddUser(id int64, account, password, phone, nickname, 
 		userAccount := &Account{
 			UserId:     id,
 			Account:    *account,
-			Password:   password,
+			Password:   nil,
 			Channel:    channel,
 			CreateTime: now,
 			UpdateTime: now,
 		}
-		err = tx.Table(d.genAccountTableName(id)).Create(userAccount).Error
+		err = tx.Exec("INSERT INTO account_login_0 (account,user_id,password_hash) VALUES (?,?,?)", *account, id, password).Error
+		if err == nil {
+			err = tx.Table(d.genAccountTableName(id)).Create(userAccount).Error
+		}
 	}
 	return user, err
 }

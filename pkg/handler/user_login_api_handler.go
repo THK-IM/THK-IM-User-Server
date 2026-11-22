@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sirupsen/logrus"
+
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	baseMiddleware "github.com/thk-im/thk-im-base-server/middleware"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
@@ -17,16 +17,13 @@ func userRegister(appCtx *app.Context) gin.HandlerFunc {
 		var req dto.RegisterReq
 		err := ctx.BindJSON(&req)
 		if err != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userRegister %v", err)
 			baseDto.ResponseBadRequest(ctx)
 			return
 		}
 		resp, errReq := userLoginLogic.Register(req, claims)
 		if errReq != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userRegister %v %v", req, errReq)
 			baseDto.ResponseInternalServerError(ctx, errReq)
 		} else {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("userRegister %v %v", req, resp)
 			baseDto.ResponseSuccess(ctx, resp)
 		}
 	}
@@ -39,17 +36,14 @@ func userAccountLogin(appCtx *app.Context) gin.HandlerFunc {
 		var req dto.AccountLoginReq
 		err := ctx.BindJSON(&req)
 		if err != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userAccountLogin %v", err)
 			baseDto.ResponseBadRequest(ctx)
 			return
 		}
 
 		resp, errReq := userLoginLogic.AccountLogin(req, claims)
 		if errReq != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userAccountLogin %v %v", req, errReq)
 			baseDto.ResponseInternalServerError(ctx, errReq)
 		} else {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("userAccountLogin %v %v", req, resp)
 			baseDto.ResponseSuccess(ctx, resp)
 		}
 	}
@@ -61,10 +55,8 @@ func userTokenLogin(appCtx *app.Context) gin.HandlerFunc {
 		claims := ctx.MustGet(baseMiddleware.ClaimsKey).(baseDto.ThkClaims)
 		resp, errReq := userLoginLogic.TokenLogin(claims)
 		if errReq != nil {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("userTokenLogin %v", errReq)
 			baseDto.ResponseInternalServerError(ctx, errReq)
 		} else {
-			appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("userTokenLogin %v", resp)
 			baseDto.ResponseSuccess(ctx, resp)
 		}
 	}

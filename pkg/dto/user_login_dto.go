@@ -1,5 +1,7 @@
 package dto
 
+import msg "github.com/thk-im/thk-im-msgapi-server/pkg/dto"
+
 type RegisterReq struct {
 	Account  *string `json:"account"`
 	Password *string `json:"password"`
@@ -26,25 +28,13 @@ type ThirdPartLoginReq struct {
 	Platform   *string `json:"platform" binding:"required"`
 }
 
-type LoginRes struct {
-	User  *User  `json:"user"`
-	Token string `json:"token,omitempty"`
-}
+type LoginRes = msg.LoginRes
+type User = msg.User
+type UserOnlineStatusReq = msg.UserOnlineStatusReq
 
-type User struct {
-	Id        int64   `json:"id"`
-	DisplayId string  `json:"display_id"`
-	Avatar    *string `json:"avatar,omitempty"`
-	Nickname  *string `json:"nickname,omitempty"`
-	Qrcode    *string `json:"qrcode,omitempty"`
-	Sex       *int8   `json:"sex,omitempty"`
-	Birthday  *int64  `json:"birthday,omitempty"`
-}
-
-type UserOnlineStatusReq struct {
-	UserId      int64  `json:"user_id"`
-	IsOnline    bool   `json:"is_online"`
-	TimestampMs int64  `json:"timestamp_ms"`
-	ConnId      int64  `json:"conn_id"`
-	Platform    string `json:"platform"` // Android/Ios/Web/Linux/Mac/Windows
+type UpdateProfileReq struct {
+	Nickname *string `json:"nickname" binding:"omitempty,min=1,max=64"`
+	Avatar   *string `json:"avatar"`
+	Sex      *int8   `json:"sex" binding:"omitempty,oneof=0 1"`
+	Birthday *int64  `json:"birthday"`
 }

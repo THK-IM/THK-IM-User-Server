@@ -38,6 +38,13 @@ func LoadTables(modeConfigs []conf.Model, database *gorm.DB) error {
 			if err != nil {
 				return err
 			}
+			if ms.Name == "account" {
+				// An ambiguous legacy account must be resolved before it can authenticate.
+				q := fmt.Sprintf("INSERT INTO account_login_0 (account,user_id) SELECT LOWER(TRIM(a.account)),a.user_id FROM account_%d a LEFT JOIN account_login_0 l ON l.account=LOWER(TRIM(a.account)) AND l.user_id=a.user_id WHERE a.channel=? AND l.user_id IS NULL", i)
+				if err := database.Exec(q, model.ChannelDefault).Error; err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return nil

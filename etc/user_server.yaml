@@ -1,5 +1,8 @@
 Name: user_server
 Cipher: thk_im
+AllowOrigins:
+  - "*.thkim.com"
+  - "http://localhost:*"
 Host: 0.0.0.0
 Port: 10000
 Mode: debug
@@ -32,12 +35,16 @@ MysqlSource:
   ConnMaxLifeTime: 3600
   ConnMaxIdleTime: 3600
 ObjectStorage:
+  Name: minio
+  Engine: minio
   Endpoint: ${OS_ENDPOINT}
   Bucket: ${OS_BUCKET}
   AK: ${OS_AK}
   SK: ${OS_SK}
   Region: us-east-1
 Models:
+  - Name: "account_login"
+    Shards: 1
   - Name: "user"
     Shards: 5
   - Name: "user_display"
@@ -51,5 +58,7 @@ Metric:
   PushGateway: ""
   PushInterval: 10
 Sdks:
+  - Name: contact_check_api
+    Endpoint: "http://contact-api.thkim.com:13000"
   - Name: msg-api
     Endpoint: "http://127.0.0.1:18000"

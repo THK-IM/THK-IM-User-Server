@@ -49,20 +49,14 @@ func (d defaultUserOnlineRecordModel) GetUsersOnlineRecords(userId int64) ([]*Us
 
 func (d defaultUserOnlineRecordModel) CreateUserOnlineRecord(userId, connId int64, platform string, onlineTime int64) error {
 	tableName := d.genUserOnlineRecordTable(userId)
-	usersOnlineRecord := &UserOnlineRecord{
-		UserId:      userId,
-		Platform:    platform,
-		ConnId:      connId,
-		OnlineTime:  onlineTime,
-		OfflineTime: 0,
-	}
-	return d.db.Table(tableName).Create(usersOnlineRecord).Error
+	sql := fmt.Sprintf("INSERT INTO %s (user_id,conn_id,platform,online_time,offline_time) VALUES (?,?,?,?,0) ON DUPLICATE KEY UPDATE online_time=IF(online_time=0,VALUES(online_time),LEAST(online_time,VALUES(online_time)))", tableName)
+	return d.db.Exec(sql, userId, connId, platform, onlineTime).Error
 }
 
 func (d defaultUserOnlineRecordModel) UpdateUserOnlineRecord(userId, connId int64, platform string, offlineTime int64) error {
 	tableName := d.genUserOnlineRecordTable(userId)
-	sql := fmt.Sprintf("update %s set offline_time = ? where user_id = ? and conn_id = ?", tableName)
-	return d.db.Exec(sql, offlineTime, userId, connId).Error
+	sql := fmt.Sprintf("INSERT INTO %s (user_id,conn_id,platform,online_time,offline_time) VALUES (?,?,?,0,?) ON DUPLICATE KEY UPDATE offline_time=GREATEST(offline_time,VALUES(offline_time))", tableName)
+	return d.db.Exec(sql, userId, connId, platform, offlineTime).Error
 }
 
 func (d defaultUserOnlineRecordModel) genUserOnlineRecordTable(userId int64) string {

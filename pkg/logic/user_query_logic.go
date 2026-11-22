@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
+
 	baseDto "github.com/thk-im/thk-im-base-server/dto"
 	"github.com/thk-im/thk-im-user-server/pkg/app"
 	"github.com/thk-im/thk-im-user-server/pkg/dto"
@@ -28,6 +28,9 @@ func (l *UserQueryLogic) QueryUserBasicInfoById(id int64, claims baseDto.ThkClai
 }
 
 func (l *UserQueryLogic) BatchQueryUserBasicInfoByIds(ids []int64, claims baseDto.ThkClaims) (map[int64]*dto.BasicUser, error) {
+	if len(ids) == 0 {
+		return map[int64]*dto.BasicUser{}, nil
+	}
 	userInfoKeys := make([]string, 0)
 	for _, id := range ids {
 		userInfoKey := fmt.Sprintf(userInfoKeyFormatter, l.appCtx.Config().Name, id)
@@ -44,7 +47,7 @@ func (l *UserQueryLogic) BatchQueryUserBasicInfoByIds(ids []int64, claims baseDt
 		if ok {
 			user := &dto.User{}
 			errJson := json.Unmarshal([]byte(jsonUserInfo), user)
-			if errJson != nil {
+			if errJson == nil && user.Id > 0 {
 				baseUser := &dto.BasicUser{
 					Id:        user.Id,
 					DisplayId: user.DisplayId,
@@ -78,25 +81,11 @@ func (l *UserQueryLogic) BatchQueryUserBasicInfoByIds(ids []int64, claims baseDt
 		}
 	}
 
-	mSetStrings := make([]string, 0)
-	for _, dtoUser := range dtoUsers {
-		value, errJson := json.Marshal(dtoUser)
-		if errJson == nil {
-			key := fmt.Sprintf(userInfoKeyFormatter, l.appCtx.Config().Name, dtoUser.Id)
-			mSetStrings = append(mSetStrings, key)
-			mSetStrings = append(mSetStrings, string(value))
+	for _, user := range dtoUsers {
+		if err := setUserInfoCache(user, l.appCtx); err != nil {
+			l.appCtx.Logger().Warn(err)
 		}
 	}
-
-	if len(mSetStrings) > 0 {
-		result, errSet := l.appCtx.RedisCache().MSet(context.Background(), mSetStrings).Result()
-		if errSet != nil {
-			l.appCtx.Logger().WithFields(logrus.Fields(claims)).Errorf("BatchQueryUserBasicInfoByIds mset %s", errSet.Error())
-		} else {
-			l.appCtx.Logger().WithFields(logrus.Fields(claims)).Infof("BatchQueryUserBasicInfoByIds mset %s", result)
-		}
-	}
-
 	return userMap, nil
 }
 
@@ -119,4 +108,8 @@ func userDto2UserBasicDto(user *dto.User) *dto.BasicUser {
 		Nickname:  user.Nickname,
 		Sex:       user.Sex,
 	}
+}
+
+func (l *UserQueryLogic) OwnProfile(uid int64) (*dto.User, error) {
+	return getUserInfo(uid, l.appCtx)
 }
