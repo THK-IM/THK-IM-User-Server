@@ -11,7 +11,7 @@ BodyCipherIV: 0000000000000000
 # exposed外网暴露模式，校验用户token
 # backend后端模式，校验ip
 DeployMode: "backend"
-IpWhiteList: 192.168.31.1/24, 192.168.1.1/24, 192.168.0.1/24
+IpWhiteList: 192.168.0.0/16
 Node:
   MaxCount: 1024
   PollingInterval: 15
